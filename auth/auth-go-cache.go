@@ -59,7 +59,7 @@ func MakeGoCacheStore(filename string) (*GoCacheStore, error) {
 // Get gets from the store
 func (store GoCacheStore) Get(k string) (*Account, bool) {
 	account, found := store.cache.Get(k)
-	if (found) {
+	if found {
 		return account.(*Account), found
 	}
 	return nil, found
@@ -81,7 +81,7 @@ func (store GoCacheStore) Save() error {
 
 	var accounts []*Account
 
-	for _, v := range items { 
+	for _, v := range items {
 		accounts = append(accounts, v.Object.(*Account))
 	}
 
@@ -102,8 +102,6 @@ func reload(filename string, store *GoCacheStore) error {
 
 	var readdata []Account
 
-	fmt.Println(data)
-
 	jsonerr := json.Unmarshal(data, &readdata)
 	if jsonerr != nil {
 		fmt.Println("JsonErr")
@@ -114,7 +112,7 @@ func reload(filename string, store *GoCacheStore) error {
 
 	for _, acc := range readdata {
 		items[acc.User] = cache.Item{
-			Object: &acc,
+			Object:     &acc,
 			Expiration: 0,
 		}
 	}
@@ -127,10 +125,14 @@ func waitForUpdates(watch *fsnotify.Watcher, store *GoCacheStore) {
 	for {
 		select {
 		case e := <-watch.Events:
-			err := reload(e.Name, store)
-			if err != nil {
-				fmt.Println("Error reloading auth")
-				fmt.Println(e)
+			if e.Op != fsnotify.Chmod {
+				err := reload(e.Name, store)
+				if err != nil {
+					fmt.Println("Error reloading auth (see below error message)")
+					fmt.Println(err)
+				} else {
+					fmt.Println("Auth file has been updated.")
+				}
 			}
 		case e := <-watch.Errors:
 			fmt.Println("File watch detected an error, auth may not stay up to date with file! Consider restarting the application")
