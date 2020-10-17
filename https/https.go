@@ -42,7 +42,7 @@ func StartServer(useTLS bool, certDir string, host string, httpAddr string, http
 		}
 
 		fmt.Println("Starting redirect server on address " + httpAddr)
-		go fmt.Println(redirectServer.ListenAndServe())
+		go redirectServer.ListenAndServe()
 
 		fmt.Println("Starting https server on address " + httpsAddr)
 		fmt.Println(baseServer.ListenAndServeTLS("", ""))
