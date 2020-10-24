@@ -32,11 +32,12 @@ func remove(slice []string, val string) []string {
 
 func main() {
 	authfile := flag.String("auth", "", "(Required) Location to find (or create) the Auth configuration file")
-	new := flag.Bool("new", false, "Pass this flag to create an empty auth first rather than loading from disk")
+	new := flag.Bool("new", false, "Pass this flag to create an empty auth first rather than loading from disk. Does not create unless an account is added")
 
 	add := flag.Bool("add", false, "Creates an account with a username, password and permissions")
 	edit := flag.Bool("edit", false, "Finds a username, and edits the read and write permissions as well as the password if passed")
 	check := flag.Bool("check", false, "Checks a username and password against the auth file. Does not edit.")
+	list := flag.Bool("list", false, "Lists the usernames in the file read in. Does not edit.")
 
 	username := flag.String("username", "", "To add a user, pass the username here along with the password. Also use these to check for accounts")
 	password := flag.String("password", "", "To add/check a user, pass the password here (Required if username)")
@@ -73,6 +74,13 @@ func main() {
 
 	fmt.Println("Successfully loaded/created auth")
 
+	if *list {
+		db := authdb.GetAll()
+		for k := range db {
+			fmt.Println("User " + k)
+		}
+	}
+
 	if *add && *username != "" && *password != "" {
 		hashedpass, hasherr := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 
@@ -98,13 +106,13 @@ func main() {
 			fmt.Println("Account has access to write path " + *addwrite)
 			newAcc.Writeable = append(newAcc.Writeable, *addwrite)
 		}
-		authdb.AddUser(&newAcc)
+		authdb.AddUser(newAcc)
 	} else if *add && (*username == "" || *password == "") {
 		fmt.Println("Did not add user because no username or password was passed")
 	}
 
 	if *check {
-		var acc *auth.Account
+		var acc auth.Account
 		if *password != "" {
 			fmt.Println("Checking for username " + *username + " and passed password")
 			var fetcherr error
@@ -117,7 +125,8 @@ func main() {
 		} else {
 			fmt.Println("Viewing user " + *username)
 			var found bool
-			acc, found = authdb.ViewAccount(*username)
+			db := authdb.GetAll()
+			acc, found = db[*username]
 			if !found {
 				fmt.Println("Account not found")
 				os.Exit(1)
@@ -131,7 +140,8 @@ func main() {
 
 	if *edit {
 		fmt.Println("Editing user " + *username)
-		acc, found := authdb.ViewAccount(*username)
+		db := authdb.GetAll()
+		acc, found := db[*username]
 		if !found {
 			fmt.Println("User did not exist")
 		} else {

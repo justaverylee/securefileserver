@@ -4,9 +4,11 @@ import "errors"
 
 // store can be any key value store. It is what we use as the backing for our
 type store interface {
-	Get(k string) (*Account, bool)
-	Set(user string, x *Account)
+	Get(k string) (Account, bool)
+	Set(user string, x Account)
 	Delete(user string)
+
+	GetAll() map[string]Account
 
 	Save() error
 }
@@ -36,28 +38,28 @@ func (auth Auth) SetDefault(account Account) {
 }
 
 // GetDefault returns the default account
-func (auth Auth) GetDefault() *Account {
-	return &auth.defaultAccount
+func (auth Auth) GetDefault() Account {
+	return auth.defaultAccount
 }
 
 // GetAccount gets an account if the username and password match
-func (auth Auth) GetAccount(username string, password []byte) (*Account, error) {
+func (auth Auth) GetAccount(username string, password []byte) (Account, error) {
 	toCheck, exists := auth.store.Get(username)
 	if exists {
 		if toCheck.CheckPassword(password) {
 			return toCheck, nil
 		}
 	}
-	return nil, errors.New("Failed to Authenticate")
+	return Account{}, errors.New("Failed to Authenticate")
 }
 
-// ViewAccount allows viewing or editing an account. This does not provide security
-func (auth Auth) ViewAccount(username string) (*Account, bool) {
-	return auth.store.Get(username)
+// GetAll allows unsecured access to the auth database
+func (auth Auth) GetAll() map[string]Account {
+	return auth.store.GetAll()
 }
 
 // AddUser adds a user to the store, and writes the store back
-func (auth Auth) AddUser(acc *Account) {
+func (auth Auth) AddUser(acc Account) {
 	auth.store.Set(acc.User, acc)
 	auth.store.Save()
 }

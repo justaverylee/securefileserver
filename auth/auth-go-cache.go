@@ -57,16 +57,16 @@ func MakeGoCacheStore(filename string) (*GoCacheStore, error) {
 }
 
 // Get gets from the store
-func (store GoCacheStore) Get(k string) (*Account, bool) {
+func (store GoCacheStore) Get(k string) (Account, bool) {
 	account, found := store.cache.Get(k)
 	if found {
-		return account.(*Account), found
+		return account.(Account), found
 	}
-	return nil, found
+	return Account{}, found
 }
 
 // Set sets to the store
-func (store GoCacheStore) Set(k string, x *Account) {
+func (store GoCacheStore) Set(k string, x Account) {
 	store.cache.SetDefault(k, x)
 }
 
@@ -75,14 +75,26 @@ func (store GoCacheStore) Delete(k string) {
 	store.cache.Delete(k)
 }
 
+// GetAll returns the database as a map from key to values
+func (store GoCacheStore) GetAll() map[string]Account {
+	accounts := make(map[string]Account, store.cache.ItemCount())
+
+	items := store.cache.Items()
+
+	for k, v := range items {
+		accounts[k] = v.Object.(Account)
+	}
+	return accounts
+}
+
 // Save writes to disk
 func (store GoCacheStore) Save() error {
 	items := store.cache.Items()
 
-	var accounts []*Account
+	var accounts []Account
 
 	for _, v := range items {
-		accounts = append(accounts, v.Object.(*Account))
+		accounts = append(accounts, v.Object.(Account))
 	}
 
 	data, jsonerr := json.Marshal(accounts)
@@ -96,7 +108,6 @@ func (store GoCacheStore) Save() error {
 func reload(filename string, store *GoCacheStore) error {
 	data, fileerr := ioutil.ReadFile(filename)
 	if fileerr != nil {
-		fmt.Println("FileErr")
 		return fileerr
 	}
 
@@ -104,7 +115,6 @@ func reload(filename string, store *GoCacheStore) error {
 
 	jsonerr := json.Unmarshal(data, &readdata)
 	if jsonerr != nil {
-		fmt.Println("JsonErr")
 		return jsonerr
 	}
 
@@ -112,7 +122,7 @@ func reload(filename string, store *GoCacheStore) error {
 
 	for _, acc := range readdata {
 		items[acc.User] = cache.Item{
-			Object:     &acc,
+			Object:     acc,
 			Expiration: 0,
 		}
 	}

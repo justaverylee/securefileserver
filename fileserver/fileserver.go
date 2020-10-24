@@ -106,12 +106,13 @@ func (h fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username, password, ok := r.BasicAuth()
-	var user *auth.Account
+	var user auth.Account
+	var err error
 	if ok {
-		user, _ = h.accounts.GetAccount(username, []byte(password))
+		user, err = h.accounts.GetAccount(username, []byte(password))
 	}
 
-	if (user == nil) {
+	if err != nil {
 		user = h.accounts.GetDefault()
 	}
 
