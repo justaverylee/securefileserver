@@ -21,21 +21,29 @@ func (account Account) GetName() string {
 
 // CanRead returns true if the Account can read the queried path
 func (account Account) CanRead(queriedpath string) bool {
-	for _, readablepath := range account.Readable {
-		if match, _ := path.Match(readablepath, queriedpath); match {
-			return true
+	for ok := true; ok; ok = (queriedpath != "." && queriedpath != "/") {
+		for _, readablepath := range account.Readable {
+			if match, _ := path.Match(readablepath, queriedpath); match {
+				return true
+			}
 		}
+		queriedpath = path.Dir(queriedpath)
 	}
+
 	return false
 }
 
 // CanWrite returns true if the Account can write the queried path
 func (account Account) CanWrite(queriedpath string) bool {
-	for _, writeablepath := range account.Readable {
-		if match, _ := path.Match(writeablepath, queriedpath); match {
-			return true
+	for ok := true; ok; ok = (queriedpath != "." && queriedpath != "/") {
+		for _, writeablepath := range account.Writeable {
+			if match, _ := path.Match(writeablepath, queriedpath); match {
+				return true
+			}
 		}
+		queriedpath = path.Dir(queriedpath)
 	}
+
 	return false
 }
 
