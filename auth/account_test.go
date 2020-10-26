@@ -1,6 +1,9 @@
 package auth
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 var admin Account = Account{
 	User:      "admin",
@@ -33,28 +36,41 @@ func TestGetName(t *testing.T) {
     }
 }
 
+// change this to test the helper function
 func TestCanRead(t *testing.T) {
-	tester := Account{
-		User:      "",
+	tester1 := Account{
+		User:      "test1",
 		Readable:  []string{"/foo", "/bar/baz"},
 		Writeable: []string{},
 		Hash:      "",
 	}
-
-	positiveTests := []string{"/foo/yarr/pop", "/bar/baz/"}
-	negativeTests := []string{"gibberish", "/"}
-
-	for _, s := range positiveTests {
-		if !tester.CanRead(s) {
-   	    	t.Errorf("Can't read %v\n", s)
-		}
+	
+	var tests = []struct{
+		acc Account
+		path string
+		expected bool
+	}{
+		//array
+		{tester1, "/foo/yarr/pop", true},
+		{tester1, "/bar/baz/", true},
+		{tester1, "gibberish", false},
+		{tester1, "/", false},
 	}
 
-	for _, s := range negativeTests {
-		if tester.CanRead(s) {
-   	    	t.Errorf("Can read %v\n", s)
-		}
+    for _, tt := range tests {
+        testname := fmt.Sprintf("%v:%v", tt.acc.GetName(), tt.path)
+        t.Run(testname, func(t *testing.T) {
+            if tt.acc.CanRead(tt.path) != tt.expected {
+				if tt.expected {
+					t.Errorf("false positive")
+				} else {
+					t.Errorf("false negative")
+				}	
+            }
+        })
 	}
+	
+	return
 }
 
 func TestCanWrite(t *testing.T) {
