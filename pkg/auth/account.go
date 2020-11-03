@@ -19,32 +19,30 @@ func (account Account) GetName() string {
 	return account.User
 }
 
-// CanRead returns true if the Account can read the queried path
-func (account Account) CanRead(queriedpath string) bool {
-	for ok := true; ok; ok = (queriedpath != "." && queriedpath != "/") {
-		for _, readablepath := range account.Readable {
-			if match, _ := path.Match(readablepath, queriedpath); match {
+func canAccess(acl []string, qpath string) bool {
+	for {
+		for _, readablepath := range acl {
+			if match, _ := path.Match(readablepath, qpath); match {
 				return true
 			}
 		}
-		queriedpath = path.Dir(queriedpath)
-	}
 
-	return false
+		nextpath := path.Dir(qpath)
+		if nextpath == qpath {
+			return false
+		}
+		qpath = nextpath
+	}
+}
+
+// CanRead returns true if the Account can read the queried path
+func (account Account) CanRead(queriedpath string) bool {
+	return canAccess(account.Readable, queriedpath)
 }
 
 // CanWrite returns true if the Account can write the queried path
 func (account Account) CanWrite(queriedpath string) bool {
-	for ok := true; ok; ok = (queriedpath != "." && queriedpath != "/") {
-		for _, writeablepath := range account.Writeable {
-			if match, _ := path.Match(writeablepath, queriedpath); match {
-				return true
-			}
-		}
-		queriedpath = path.Dir(queriedpath)
-	}
-
-	return false
+	return canAccess(account.Writeable, queriedpath)
 }
 
 // CheckPassword checks a password against the Account

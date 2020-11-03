@@ -1,4 +1,4 @@
-module github.com/zggz/securefileserver/auth
+module github.com/zggz/securefileserver/pkg/auth
 
 go 1.15
 

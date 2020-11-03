@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/zggz/securefileserver/auth"
+	"github.com/zggz/securefileserver/pkg/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 

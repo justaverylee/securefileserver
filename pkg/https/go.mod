@@ -1,4 +1,4 @@
-module github.com/zggz/securefileserver/https
+module github.com/zggz/securefileserver/pkg/https
 
 go 1.15
 

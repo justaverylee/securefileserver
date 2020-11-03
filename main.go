@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/zggz/securefileserver/auth"
-	"github.com/zggz/securefileserver/fileserver"
-	"github.com/zggz/securefileserver/https"
+	"github.com/zggz/securefileserver/pkg/auth"
+	"github.com/zggz/securefileserver/pkg/fileserver"
+	"github.com/zggz/securefileserver/pkg/https"
 )
 
 func main() {

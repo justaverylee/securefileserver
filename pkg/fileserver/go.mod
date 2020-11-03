@@ -1,4 +1,4 @@
-module github.com/zggz/securefileserver/fileserver
+module github.com/zggz/securefileserver/pkg/fileserver
 
 go 1.15
 

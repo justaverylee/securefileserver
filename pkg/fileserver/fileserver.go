@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/zggz/securefileserver/auth"
+	"github.com/zggz/securefileserver/pkg/auth"
 )
 
 type fileHandler struct {
